@@ -58,7 +58,7 @@ except ImportError:
     pass
 
 # Update these names when new versions of cudnn are supported.
-WIN32_CUDNN_NAMES = ['cudnn64_6.dll', 'cudnn64_5.dll']
+WIN32_CUDNN_NAMES = ['cudnn64_7.dll', 'cudnn64_6.dll', 'cudnn64_5.dll']
 
 
 def _load_lib(name):
@@ -164,13 +164,13 @@ if ((err = cudnnCreate(&_handle)) != CUDNN_STATUS_SUCCESS) {
 
 def _dnn_check_version():
     v = version()
-    if v < 5000:
-        return False, "cuDNN version is too old. Update to v5* or higher, was %d." % v
-    if v >= 6100:
+    if v < 6000:
+        return False, "cuDNN version is too old. Update to v6* or higher, was %d." % v
+    if v >= 7200:
         warnings.warn("Your cuDNN version is more recent than "
                       "Theano. If you encounter problems, try "
                       "updating Theano or downgrading cuDNN to "
-                      "a version >= v5 and <= v6.")
+                      "a version >= v6 and <= v7.")
     return True, None
 
 
@@ -398,7 +398,7 @@ class DnnBase(COp):
         return []
 
     def c_code_cache_version(self):
-        return (super(DnnBase, self).c_code_cache_version(), version(), 1)
+        return (super(DnnBase, self).c_code_cache_version(), version(), 2)
 
 
 class GpuDnnConvDesc(COp):
@@ -566,7 +566,7 @@ class GpuDnnConv(DnnBase):
                              num_groups=int_t)
 
     def __init__(self, algo=None, inplace=False, num_groups=1):
-        DnnBase.__init__(self, ["c_code/dnn_conv_base.c", "c_code/dnn_fwd.c"],
+        DnnBase.__init__(self, ["c_code/dnn_conv_base.c", "c_code/dnn_conv_find.c", "c_code/dnn_fwd.c"],
                          "APPLY_SPECIFIC(conv_fwd)")
 
         if algo is None:
@@ -709,7 +709,7 @@ class GpuDnnConvGradW(DnnBase):
                              num_groups=int_t)
 
     def __init__(self, inplace=False, algo=None, num_groups=1):
-        DnnBase.__init__(self, ["c_code/dnn_conv_base.c", "c_code/dnn_gw.c"],
+        DnnBase.__init__(self, ["c_code/dnn_conv_base.c", "c_code/dnn_conv_find.c", "c_code/dnn_gw.c"],
                          "APPLY_SPECIFIC(conv_gw)")
         self.inplace = bool(inplace)
         if self.inplace:
@@ -845,7 +845,7 @@ class GpuDnnConvGradI(DnnBase):
                              num_groups=int_t)
 
     def __init__(self, inplace=False, algo=None, num_groups=1):
-        DnnBase.__init__(self, ["c_code/dnn_conv_base.c", "c_code/dnn_gi.c"],
+        DnnBase.__init__(self, ["c_code/dnn_conv_base.c", "c_code/dnn_conv_find.c", "c_code/dnn_gi.c"],
                          "APPLY_SPECIFIC(conv_gi)")
         self.inplace = bool(inplace)
         if self.inplace:
