@@ -90,7 +90,7 @@ def _dnn_lib():
                     if lib_name:
                         break
             if lib_name is None:
-                raise RuntimeError('Could not find cudnn library (looked for v5* or v6*)')
+                raise RuntimeError('Could not find cudnn library (looked for v5* to v7*)')
             else:
                 dnn_handle = ctypes.cdll.LoadLibrary(lib_name)
 
@@ -164,13 +164,13 @@ if ((err = cudnnCreate(&_handle)) != CUDNN_STATUS_SUCCESS) {
 
 def _dnn_check_version():
     v = version()
-    if v < 6000:
-        return False, "cuDNN version is too old. Update to v6* or higher, was %d." % v
+    if v < 5000:
+        return False, "cuDNN version is too old. Update to v5* or higher, was %d." % v
     if v >= 7200:
         warnings.warn("Your cuDNN version is more recent than "
                       "Theano. If you encounter problems, try "
                       "updating Theano or downgrading cuDNN to "
-                      "a version >= v6 and <= v7.")
+                      "a version >= v5 and <= v7.")
     return True, None
 
 
