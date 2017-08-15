@@ -80,15 +80,14 @@ APPLY_SPECIFIC(conv_gw)(PyGpuArrayObject *input, PyGpuArrayObject *output,
     return 1;
   // set number of groups for grouped convolutions
   if (params->num_groups > 1) {
-    if (cudnnGetVersion() >= 7000) {
+    #if CUDNN_MAJOR >= 7
       if(cudnnSetConvolutionGroupCount(desc, params->num_groups) == CUDNN_STATUS_BAD_PARAM)
         return 1;
-    }
-    else {
+    #else
       PyErr_SetString(PyExc_RuntimeError,
               "grouped convolutions not supported for cudnn version < 7");
       return 1;
-    }
+    #endif
   }
 
   cudnnConvolutionBwdFilterAlgo_t algo = params->conv_algo;
