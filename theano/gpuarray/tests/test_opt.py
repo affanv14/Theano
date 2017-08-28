@@ -24,7 +24,7 @@ from ..linalg import GpuCusolverSolve, cusolver_available, GpuCholesky
 from .config import mode_with_gpu, mode_without_gpu, test_ctx_name, SkipTest
 import unittest
 from theano.tensor.nnet import abstract_conv
-from theano.gpuarray import dnn, blas
+from theano.gpuarray import dnn, blas, opt
 
 
 def test_local_assert():
@@ -710,10 +710,13 @@ class Conv_opt_test(unittest.TestCase):
 
     def optimizer_2d(self, input_shapes, direction, include_tags, exclude_tags,
                      op, border_mode='valid', subsample=(1, 1),
-                     filter_dilation=(1, 1), num_groups=1):
+                     filter_dilation=(1, 1), num_groups=1, optimizer=None):
 
         inp1 = theano.shared(np.random.random(input_shapes[0]).astype(theano.config.floatX))
         inp2 = theano.shared(np.random.random(input_shapes[1]).astype(theano.config.floatX))
+        if op is None:
+            inp1 = basic_ops.as_gpu_variable(inp1, None)
+            inp2 = basic_ops.as_gpu_variable(inp2, None)
         if(direction == 0):
             conv_op = abstract_conv.conv2d(inp1,
                                            inp2,
@@ -754,9 +757,9 @@ class Conv_opt_test(unittest.TestCase):
         # so it use the default mode.
         if op is None:
             # No convolutions optimization takes place
-            with theano.change_flags(mode=mode):
-                with self.assertRaises(AssertionError):
-                    theano.function([], conv_op, mode=mode)
+            import pdb
+            pdb.set_trace()
+            opt.local_abstractconv_gemm_alt(conv_op)
             return
         else:
             with theano.change_flags(mode=mode):
